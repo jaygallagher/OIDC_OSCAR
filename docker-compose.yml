@@ -1,0 +1,56 @@
+version: "3.9"
+services:
+  db:
+    container_name: db_mysql
+    image: mariadb:10.5 
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: dbpassword
+      MYSQL_DATABASE: oscar
+      MYSQL_USER: oscar 
+      MYSQL_PASSWORD: oscar
+    command:
+      - "mysqld"
+      - "--innodb_buffer_pool_size=400M"
+      - "--default-storage-engine=MyISAM"
+    volumes:
+      # change this to your local path
+      - "./data:/var/lib/mysql"
+      - "./oscar/database/mysql:/oscarDB_files"
+    networks:
+      - local
+    ports:
+      - "3306:3306"
+
+  tomcat:
+    image: tomcat:9.0.94-jdk11-temurin-jammy 
+    ports:
+      - "8080:8080"
+    container_name: tomcat
+    volumes:
+      - ./logs/:/usr/local/tomcat/logs/
+      - ./webapps/:/usr/local/tomcat/webapps/
+      - ./context.xml:/usr/local/tomcat/conf/context.xml
+    depends_on:
+      - "db"
+    environment:
+      JAVA_OPTS_APPEND: -Dkeycloak.profile.feature.upload_scripts=enabled
+      KC_DB_PASSWORD: postgres
+      KC_DB_URL: jdbc:postgresql://postgres/keycloak
+      KC_DB_URL_PORT: 5433
+      KC_DB_USERNAME: postgres
+      KC_HEALTH_ENABLED: 'true'
+      KC_HTTP_ENABLED: 'true'
+      KC_METRICS_ENABLED: 'true'
+      KC_HOSTNAME_URL: http://host.docker.internal:8180
+      KC_PROXY: reencrypt
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+    networks:
+      - local
+
+networks:
+  local:
+    name: local
+    driver: bridge
+

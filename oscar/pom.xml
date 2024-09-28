@@ -66,6 +66,11 @@
    <dependencies>
       <!-- general libraries -->
       <dependency>
+         <groupId>com.nimbusds</groupId>
+         <artifactId>oauth2-oidc-sdk</artifactId>
+         <version>9.15</version>
+      </dependency>
+      <dependency>
          <groupId>net.bull.javamelody</groupId>
          <artifactId>javamelody-core</artifactId>
          <version>1.98.0</version>

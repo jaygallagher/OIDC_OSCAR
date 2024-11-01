@@ -1,0 +1,5 @@
+ls
+cd /backend/
+ls
+cat bash_history 
+./mvnw spring-boot:run

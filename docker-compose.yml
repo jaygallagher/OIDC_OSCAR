@@ -48,7 +48,21 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: password
     networks:
       - local
-
+  haproxy:
+    image: haproxy:latest
+    ports:
+      - "8881:80"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+  firstapp:
+    build: ./backend/docker_image/
+    #image: springbootEXE:local
+    environment:
+      - JAR_FILE=demo.jar
+    volumes:
+      - ./backend/target/demo-0.0.1-SNAPSHOT.jar:/app/demo.jar
+    ports:
+      - "8081:8080"
 networks:
   local:
     name: local

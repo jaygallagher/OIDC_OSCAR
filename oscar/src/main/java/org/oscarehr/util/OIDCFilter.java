@@ -6,6 +6,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -93,11 +94,11 @@ grant_type=authorization_code
     
     String issuerString = "http://host.docker.internal:8180/realms/OSCARTEST";
     
-    String REDIRECT_URI = "http://localhost:8080/oscar/proc.jsp";
-    String CLIENT_ID = "oscarweb";
+    String REDIRECT_URI = "http://localhost:8881/oscar/proc.jsp";
+    String CLIENT_ID = "oscarweb2";
 
     // Construct the redirect URI for post-logout
-    URI postLogoutRedirectURI = new URI("http://localhost:8080/oscar/");
+    URI postLogoutRedirectURI = null;// new URI("http://localhost:8881/oscar/");
 
     SystemPreferencesDao systemPreferencesDao = SpringUtils.getBean(SystemPreferencesDao.class);
     private ProviderPreferenceDao providerPreferenceDao = (ProviderPreferenceDao) SpringUtils.getBean("providerPreferenceDao");
@@ -116,7 +117,7 @@ grant_type=authorization_code
         // Initialization code
         try{
             Issuer issuer = new Issuer(issuerString);//"http://host.docker.internal:8180/realms/OSCARTEST");
-
+	    postLogoutRedirectURI = new URI("http://localhost:8881/oscar/");
             // Resolve the OpenID provider metadata
             opMetadata = OIDCProviderMetadata.resolve(issuer);
 
@@ -247,6 +248,13 @@ grant_type=authorization_code
                        
                         setOscarSessionRequirements(session, securityRecord, decodedJWT, accessToken, idToken);
 
+                        Cookie cookie = new Cookie("access_token", accessToken);
+                        //cookie.setHttpOnly(true);
+                        //cookie.setSecure(true); // Ensure this is true in production
+                        cookie.setPath("/");
+                        cookie.setMaxAge(3600); // Set the expiration time as needed
+                        httpResponse.addCookie(cookie);
+
                         LoggedInInfo loggedInInfo = LoggedInUserFilter.generateLoggedInInfoFromSession(httpRequest);
 
                         System.out.println("redirect provider control");
@@ -333,8 +341,8 @@ grant_type=authorization_code
 
                         session.setAttribute("accessToken",accessToken);
                         session.setAttribute("idToken",idToken);
-                          
 
+                        
 
                         session.setAttribute("userfirstname", decodedJWT.getClaim("family_name").asString());
                         session.setAttribute("userlastname", decodedJWT.getClaim("given_name").asString());
